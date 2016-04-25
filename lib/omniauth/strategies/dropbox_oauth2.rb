@@ -10,12 +10,12 @@ module OmniAuth
         :token_url          => 'https://api.dropbox.com/1/oauth2/token'
       }
 
-      uid { raw_info['uid'] }
+      uid { raw_info['account_id'] }
 
       info do
         {
-          'uid'   => raw_info['uid'],
-          'name'  => raw_info['display_name'],
+          'account_id' => raw_info['account_id'],
+          'name'  => raw_info['name']['display_name'],
           'email' => raw_info['email']
         }
       end
@@ -25,7 +25,12 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= MultiJson.decode(access_token.get('/1/account/info').body)
+        @raw_info ||= MultiJson.decode(
+          access_token.post(
+            '/2/users/get_current_account',
+            { headers: {'Content-Type': 'application/json'}, body: "null" }
+          ).body
+        )
       end
 
       def callback_url
